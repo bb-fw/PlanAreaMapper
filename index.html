@@ -3,849 +3,900 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#0d1b2a">
+<meta name="theme-color" content="#070f1a">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>FloorArea — Floorplan Measurement Tool</title>
+<title>PAM — Plan Area Mapper</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,300;9..144,400&display=swap');
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 
-:root {
-  --bg:         #0d1b2a;
-  --surface:    #112236;
-  --surface2:   #1a3150;
-  --surface3:   #1f3a5f;
-  --border:     rgba(100,160,220,0.10);
-  --border2:    rgba(100,160,220,0.20);
-  --accent:     #3b82f6;
-  --accent2:    #7db4f8;
-  --accent-dim: rgba(59,130,246,0.14);
-  --green:      #34d399;
-  --green-dim:  rgba(52,211,153,0.13);
-  --amber:      #fbbf24;
-  --amber-dim:  rgba(251,191,36,0.12);
-  --red:        #f87171;
-  --text:       #dce8f5;
-  --muted:      #7a9ab8;
-  --mono:       'DM Mono', monospace;
-  --serif:      'Fraunces', serif;
-  --header-h:   52px;
-  --bar-h:      44px;
+:root{
+  --bg:       #070f1a;
+  --surf:     #0c1d2e;
+  --surf2:    #122540;
+  --surf3:    #193050;
+  --border:   rgba(80,140,210,0.10);
+  --border2:  rgba(80,140,210,0.22);
+  --accent:   #2563eb;
+  --accent2:  #60a5fa;
+  --adim:     rgba(37,99,235,0.16);
+  --green:    #34d399;
+  --gdim:     rgba(52,211,153,0.14);
+  --amber:    #fbbf24;
+  --adim2:    rgba(251,191,36,0.13);
+  --red:      #f87171;
+  --text:     #cfe0f2;
+  --muted:    #6688a8;
+  --nav-h:    56px;
+  --head-h:   50px;
+  --tool-h:   40px;
 }
 
-html, body { height: 100%; overflow: hidden; }
-
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--mono);
-  font-size: 13px;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  touch-action: none;
+html,body{height:100%;overflow:hidden;}
+body{
+  background:var(--bg);color:var(--text);
+  font-family:'DM Mono',monospace;font-size:13px;
+  display:flex;flex-direction:column;height:100%;
+  touch-action:none;
 }
 
-header {
-  height: var(--header-h);
-  min-height: var(--header-h);
-  padding: 0 1rem;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: var(--surface);
-  z-index: 10;
-  flex-shrink: 0;
+/* ═══════════ HEADER ═══════════ */
+header{
+  height:var(--head-h);min-height:var(--head-h);
+  padding:0 1rem;
+  background:var(--surf);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  flex-shrink:0;z-index:5;
 }
+.logo{font-family:'Fraunces',serif;font-size:18px;font-weight:300;letter-spacing:0.01em;}
+.logo .pam{color:var(--accent2);}
+.logo .sub{font-size:11px;color:var(--muted);margin-left:8px;letter-spacing:0.04em;}
+.dots{display:flex;gap:5px;align-items:center;}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--border2);transition:background .3s;}
+.dot.on{background:var(--accent);}
+.dot.done{background:var(--green);}
 
-.logo { font-family: var(--serif); font-size: 19px; font-weight: 300; letter-spacing: -0.01em; }
-.logo span { color: var(--accent2); }
+/* ═══════════ LAYOUT ═══════════ */
+.main{display:flex;flex:1;overflow:hidden;min-height:0;}
 
-.step-indicator { display: flex; gap: 6px; align-items: center; }
-.step-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border2); transition: background 0.3s; }
-.step-dot.active { background: var(--accent); }
-.step-dot.done   { background: var(--green); }
-
-.main { display: flex; flex: 1; overflow: hidden; min-height: 0; }
-
-/* ── SIDEBAR ── */
-.sidebar {
-  width: 272px; min-width: 272px;
-  background: var(--surface);
-  border-right: 1px solid var(--border);
-  display: flex; flex-direction: column;
-  overflow-y: auto; overflow-x: hidden;
-  flex-shrink: 0;
+/* ═══════════ SIDEBAR (desktop) ═══════════ */
+.sidebar{
+  width:268px;min-width:268px;flex-shrink:0;
+  background:var(--surf);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  overflow-y:auto;overflow-x:hidden;
 }
+.panel{padding:.875rem .875rem .75rem;border-bottom:1px solid var(--border);}
+.panel.grow{flex:1;border-bottom:none;}
+.ptitle{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:.625rem;}
 
-.panel { padding: 1rem 1rem 0.75rem; border-bottom: 1px solid var(--border); }
-.panel:last-child { border-bottom: none; flex: 1; }
-.panel-title { font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.75rem; }
-
-.step-block {
-  border: 1px solid var(--border); border-radius: 8px;
-  padding: 0.875rem; margin-bottom: 0.625rem;
-  background: var(--bg); opacity: 0.45; pointer-events: none;
-  transition: opacity 0.3s, border-color 0.3s, background 0.3s;
+.sblock{
+  border:1px solid var(--border);border-radius:8px;
+  padding:.8rem;margin-bottom:.5rem;
+  background:var(--bg);opacity:.4;pointer-events:none;
+  transition:opacity .3s,border-color .3s,background .3s;
 }
-.step-block.active { opacity:1; pointer-events:all; border-color:var(--accent); background:var(--accent-dim); }
-.step-block.done   { opacity:0.85; pointer-events:all; border-color:var(--green); background:var(--green-dim); }
-.step-num { font-size:9px; color:var(--muted); margin-bottom:3px; letter-spacing:0.06em; }
-.step-block.active .step-num { color:var(--accent2); }
-.step-block.done .step-num   { color:var(--green); }
-.step-title { font-size:12px; font-weight:500; margin-bottom:6px; }
-.step-desc  { font-size:11px; color:var(--muted); line-height:1.55; margin-bottom:0.625rem; }
+.sblock.on {opacity:1;pointer-events:all;border-color:var(--accent);background:var(--adim);}
+.sblock.done{opacity:.82;pointer-events:all;border-color:var(--green);background:var(--gdim);}
+.snum{font-size:9px;color:var(--muted);margin-bottom:3px;letter-spacing:.05em;}
+.sblock.on .snum{color:var(--accent2);}
+.sblock.done .snum{color:var(--green);}
+.stitle{font-size:12px;font-weight:500;margin-bottom:5px;}
+.sdesc{font-size:11px;color:var(--muted);line-height:1.55;margin-bottom:.6rem;}
 
-/* ── BUTTONS ── */
-button {
-  font-family: var(--mono); font-size:12px;
-  border: 1px solid var(--border2);
-  background: var(--surface2); color: var(--text);
-  padding: 7px 12px; border-radius: 6px; cursor: pointer;
-  transition: background 0.15s, border-color 0.15s, transform 0.1s;
-  display: inline-flex; align-items: center; gap: 5px;
-  white-space: nowrap; touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
+/* ═══════════ BUTTONS ═══════════ */
+button{
+  font-family:'DM Mono',monospace;font-size:12px;
+  border:1px solid var(--border2);background:var(--surf2);color:var(--text);
+  padding:6px 12px;border-radius:6px;cursor:pointer;
+  transition:background .15s,border-color .15s,transform .1s;
+  display:inline-flex;align-items:center;gap:5px;
+  white-space:nowrap;touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
 }
-button:hover   { background: var(--surface3); border-color: var(--accent2); }
-button:active  { transform: scale(0.96); }
-button.primary { background:var(--accent); border-color:var(--accent); color:#fff; }
-button.primary:hover { background:#2563eb; }
-button.danger  { border-color:var(--red); color:var(--red); }
-button.danger:hover  { background:rgba(248,113,113,0.10); }
-button.success { border-color:var(--green); color:var(--green); }
-button.success:hover { background:var(--green-dim); }
+button:hover {background:var(--surf3);border-color:var(--accent2);}
+button:active{transform:scale(.96);}
+button.prim  {background:var(--accent);border-color:var(--accent);color:#fff;}
+button.prim:hover{background:#1d4ed8;}
+button.ok    {border-color:var(--green);color:var(--green);}
+button.ok:hover{background:var(--gdim);}
+button.bad   {border-color:var(--red);color:var(--red);}
+button.bad:hover{background:rgba(248,113,113,.1);}
 
-/* ── INPUTS ── */
-input[type=text], input[type=number] {
-  font-family: var(--mono); font-size:12px;
-  background:var(--bg); border:1px solid var(--border2);
-  color:var(--text); padding:7px 9px; border-radius:6px;
-  width:100%; outline:none; transition:border-color 0.2s;
+/* ═══════════ INPUTS ═══════════ */
+input[type=text],input[type=number]{
+  font-family:'DM Mono',monospace;font-size:12px;
+  background:var(--bg);border:1px solid var(--border2);
+  color:var(--text);padding:7px 9px;border-radius:6px;
+  width:100%;outline:none;transition:border-color .2s;
   -webkit-appearance:none;
 }
-input:focus { border-color: var(--accent); }
-.input-row { display:flex; gap:6px; align-items:center; margin-bottom:7px; }
-.input-row label { font-size:11px; color:var(--muted); min-width:44px; flex-shrink:0; }
-.input-row input { flex:1; min-width:0; }
-select {
-  font-family:var(--mono); font-size:12px;
-  background:var(--bg); border:1px solid var(--border2);
-  color:var(--text); padding:7px 8px; border-radius:6px;
-  outline:none; cursor:pointer; flex-shrink:0;
+input:focus{border-color:var(--accent);}
+.irow{display:flex;gap:6px;align-items:center;margin-bottom:7px;}
+.irow label{font-size:11px;color:var(--muted);min-width:44px;flex-shrink:0;}
+.irow input{flex:1;min-width:0;}
+select{
+  font-family:'DM Mono',monospace;font-size:12px;
+  background:var(--bg);border:1px solid var(--border2);
+  color:var(--text);padding:6px 7px;border-radius:6px;
+  outline:none;cursor:pointer;flex-shrink:0;
 }
 
-/* ── CANVAS AREA ── */
-.canvas-area { flex:1; display:flex; flex-direction:column; overflow:hidden; min-width:0; }
+/* ═══════════ CANVAS AREA ═══════════ */
+.carea{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;}
 
-.canvas-toolbar {
-  background:var(--surface); border-bottom:1px solid var(--border);
-  padding:0 0.75rem; height:var(--bar-h);
-  display:flex; gap:6px; align-items:center;
-  font-size:11px; color:var(--muted);
-  flex-shrink:0; overflow-x:auto;
+.ctoolbar{
+  background:var(--surf);border-bottom:1px solid var(--border);
+  padding:0 .75rem;height:var(--tool-h);
+  display:flex;gap:6px;align-items:center;
+  font-size:11px;color:var(--muted);flex-shrink:0;
 }
-.canvas-toolbar .sep { width:1px; height:18px; background:var(--border); margin:0 2px; flex-shrink:0; }
-
-.canvas-wrap { flex:1; overflow:hidden; position:relative; touch-action:none; cursor:crosshair; min-height:0; }
-canvas { display:block; touch-action:none; }
-
-#drop-overlay {
-  position:absolute; inset:1.5rem;
-  display:flex; flex-direction:column;
-  align-items:center; justify-content:center; gap:0.75rem;
-  border:2px dashed var(--border2); border-radius:12px;
-  background:var(--surface);
-  transition:border-color 0.2s, background 0.2s;
-  cursor:pointer; z-index:2; touch-action:manipulation;
-}
-#drop-overlay.drag-over { border-color:var(--accent); background:var(--accent-dim); }
-.drop-icon { font-size:40px; opacity:0.22; }
-.drop-text { font-family:var(--serif); font-size:20px; font-weight:300; color:var(--muted); text-align:center; }
-.drop-sub  { font-size:11px; color:var(--muted); opacity:0.5; text-align:center; }
-
-/* ── RESULTS ── */
-.results-panel {
-  background:var(--surface); border-top:1px solid var(--border);
-  padding:0.75rem 1rem; display:none;
-  gap:1rem; align-items:center; flex-wrap:wrap; flex-shrink:0;
-}
-.results-panel.visible { display:flex; }
-.result-card { background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:0.5rem 1rem; }
-.result-label { font-size:9px; color:var(--muted); letter-spacing:0.08em; text-transform:uppercase; margin-bottom:2px; }
-.result-value { font-family:var(--serif); font-size:22px; font-weight:300; color:var(--green); }
-.result-unit  { font-size:12px; color:var(--muted); margin-left:3px; }
-.hint-tag {
-  background:var(--amber-dim); border:1px solid rgba(251,191,36,0.18);
-  color:var(--amber); border-radius:4px;
-  font-size:10px; padding:3px 8px; letter-spacing:0.04em; white-space:nowrap;
+.ctoolbar .sep{width:1px;height:16px;background:var(--border);margin:0 2px;flex-shrink:0;}
+.zctrl{display:flex;gap:3px;align-items:center;flex-shrink:0;}
+.zctrl button{padding:3px 8px;}
+#snap-badge{
+  background:var(--adim2);border:1px solid rgba(251,191,36,.22);
+  color:var(--amber);border-radius:4px;font-size:10px;padding:2px 7px;
+  display:none;flex-shrink:0;
 }
 
-/* ── AREA LIST ── */
-.area-list { margin-top:0.5rem; }
-.area-item {
-  display:flex; justify-content:space-between; align-items:center;
-  padding:5px 0; border-bottom:1px solid var(--border);
-  font-size:12px; gap:6px;
+.cwrap{flex:1;overflow:hidden;position:relative;touch-action:none;cursor:crosshair;min-height:0;}
+canvas{display:block;touch-action:none;}
+
+/* drop overlay */
+#drop-ov{
+  position:absolute;inset:1.25rem;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.75rem;
+  border:2px dashed var(--border2);border-radius:12px;background:var(--surf);
+  transition:border-color .2s,background .2s;cursor:pointer;z-index:2;touch-action:manipulation;
 }
-.area-item:last-child { border-bottom:none; }
-.area-color { width:9px; height:9px; border-radius:2px; display:inline-block; margin-right:5px; flex-shrink:0; }
-.area-name  { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+#drop-ov.drag{border-color:var(--accent);background:var(--adim);}
+.dicon{font-size:38px;opacity:.18;}
+.dtxt{font-family:'Fraunces',serif;font-size:19px;font-weight:300;color:var(--muted);text-align:center;}
+.dsub{font-size:11px;color:var(--muted);opacity:.45;text-align:center;}
 
-.zoom-controls { display:flex; gap:3px; align-items:center; flex-shrink:0; }
-.zoom-controls button { padding:4px 9px; }
+/* results bar */
+.rbar{
+  background:var(--surf);border-top:1px solid var(--border);
+  padding:.625rem .875rem;display:none;
+  gap:.875rem;align-items:center;flex-wrap:wrap;flex-shrink:0;
+}
+.rbar.on{display:flex;}
+.rcard{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:.45rem .875rem;}
+.rlabel{font-size:9px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:2px;}
+.rval  {font-family:'Fraunces',serif;font-size:21px;font-weight:300;color:var(--green);}
+.runit {font-size:11px;color:var(--muted);margin-left:3px;}
+.htag{
+  background:var(--adim2);border:1px solid rgba(251,191,36,.18);
+  color:var(--amber);border-radius:4px;font-size:10px;padding:3px 8px;white-space:nowrap;
+}
 
-/* ════════════════════════
-   MOBILE  ≤ 700px
-════════════════════════ */
-@media (max-width: 700px) {
-  :root { --header-h:48px; --bar-h:40px; }
-  .sidebar { display:none; }
-  .main { flex-direction:column; }
-  .canvas-area { flex:1; min-height:0; }
-  .canvas-toolbar { padding:0 0.5rem; font-size:10px; gap:4px; }
-  #coord-label { display:none; }
-  #mode-label  { display:none; }
-  .results-panel { padding:0.5rem 0.75rem; gap:0.5rem; }
-  .result-value { font-size:18px; }
-  .hint-tag { display:none; }
+/* area list */
+.alist{margin-top:.5rem;}
+.aitem{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:5px 0;border-bottom:1px solid var(--border);font-size:12px;gap:6px;
+}
+.aitem:last-child{border-bottom:none;}
+.aclr{width:9px;height:9px;border-radius:2px;display:inline-block;margin-right:5px;flex-shrink:0;}
+.aname{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 
-  .mobile-nav {
-    display:flex; background:var(--surface);
-    border-top:1px solid var(--border);
-    flex-shrink:0; z-index:20;
+/* ═══════════════════════════════
+   MOBILE  ≤ 680px
+═══════════════════════════════ */
+@media(max-width:680px){
+  :root{--head-h:46px;--tool-h:36px;--nav-h:56px;}
+  .sidebar{display:none;}
+  #coord-label,#mode-label,.sep:not(.zsep){display:none;}
+  .rbar.on{gap:.5rem;padding:.5rem .75rem;}
+  .rval{font-size:17px;}
+  .htag{display:none;}
+
+  /* canvas fills screen above nav */
+  .carea{flex:1;min-height:0;}
+
+  /* ── bottom nav ── */
+  .mnav{
+    display:flex;
+    height:var(--nav-h);min-height:var(--nav-h);
+    background:var(--surf);border-top:1px solid var(--border);
+    flex-shrink:0;z-index:100;
   }
-  .mobile-nav button {
-    flex:1; border:none; border-radius:0;
-    background:transparent; color:var(--muted);
-    padding:8px 4px; font-size:10px;
-    flex-direction:column; gap:3px;
+  .mnav button{
+    flex:1;border:none;border-radius:0;background:transparent;color:var(--muted);
+    padding:6px 4px 4px;font-size:9px;letter-spacing:.03em;
+    flex-direction:column;gap:3px;
     border-right:1px solid var(--border);
-    justify-content:center; align-items:center;
-    min-height:52px;
+    justify-content:center;align-items:center;
+    min-height:0;
   }
-  .mobile-nav button:last-child { border-right:none; }
-  .mobile-nav button.nav-active { color:var(--accent2); background:var(--accent-dim); }
-  .mobile-nav button.nav-done   { color:var(--green);   background:var(--green-dim); }
-  .mobile-nav .nav-icon  { font-size:17px; line-height:1; }
-  .mobile-nav .nav-label { font-size:9px; letter-spacing:0.03em; }
+  .mnav button:last-child{border-right:none;}
+  .mnav button.nav-on  {color:var(--accent2);background:var(--adim);}
+  .mnav button.nav-done{color:var(--green);background:var(--gdim);}
+  .mnav .ni{font-size:18px;line-height:1;}
+  .mnav .nl{font-size:9px;}
 
-  .bottom-sheet {
-    position:fixed; bottom:52px; left:0; right:0;
-    background:var(--surface); border-top:1px solid var(--border2);
-    border-radius:14px 14px 0 0; z-index:30;
+  /* ── bottom sheet ── */
+  /* Sheet sits ABOVE the nav bar.
+     It's fixed, starts off-screen (translateY 100%), slides up to
+     bottom: nav-h so it never overlaps the nav. */
+  .bsheet{
+    position:fixed;
+    left:0;right:0;
+    bottom:var(--nav-h);
+    /* default collapsed: shifted down by its own height */
     transform:translateY(100%);
-    transition:transform 0.28s cubic-bezier(0.4,0,0.2,1);
-    max-height:65vh; display:flex; flex-direction:column; overflow:hidden;
+    max-height:calc(100vh - var(--head-h) - var(--nav-h) - var(--tool-h) - 8px);
+    background:var(--surf);
+    border:1px solid var(--border2);
+    border-bottom:none;
+    border-radius:14px 14px 0 0;
+    z-index:90;
+    display:flex;flex-direction:column;
+    transition:transform .28s cubic-bezier(.4,0,.2,1);
+    overflow:hidden;
   }
-  .bottom-sheet.open { transform:translateY(0); }
-  .sheet-handle { width:36px; height:4px; background:var(--border2); border-radius:2px; margin:10px auto 6px; flex-shrink:0; }
-  .sheet-content { overflow-y:auto; padding:0 1rem 1.25rem; flex:1; }
-  .sheet-close { position:absolute; top:8px; right:10px; background:transparent; border:none; color:var(--muted); font-size:18px; padding:4px 8px; cursor:pointer; }
+  .bsheet.open{transform:translateY(0);}
+
+  .bhandle{width:34px;height:4px;background:var(--border2);border-radius:2px;margin:10px auto 0;flex-shrink:0;}
+  .bclose{
+    position:absolute;top:6px;right:10px;
+    background:transparent;border:none;color:var(--muted);
+    font-size:17px;padding:4px 8px;cursor:pointer;
+  }
+  .bscroll{overflow-y:auto;-webkit-overflow-scrolling:touch;padding:.75rem 1rem 1.25rem;flex:1;}
+
+  /* sheet heading */
+  .shead{font-size:13px;font-weight:500;color:var(--text);margin-bottom:.625rem;}
 }
 
-@media (min-width: 701px) {
-  .mobile-nav, .bottom-sheet { display:none !important; }
+@media(min-width:681px){
+  .mnav,.bsheet{display:none!important;}
 }
 </style>
 </head>
 <body>
 
 <header>
-  <div class="logo">Floor<span>Area</span></div>
-  <div class="step-indicator">
-    <div class="step-dot active" id="dot-1"></div>
-    <div class="step-dot" id="dot-2"></div>
-    <div class="step-dot" id="dot-3"></div>
+  <div class="logo"><span class="pam">PAM</span><span class="sub">Plan Area Mapper</span></div>
+  <div class="dots">
+    <div class="dot on"  id="d1"></div>
+    <div class="dot"     id="d2"></div>
+    <div class="dot"     id="d3"></div>
   </div>
 </header>
 
 <div class="main">
-  <!-- DESKTOP SIDEBAR -->
+
+  <!-- ══ DESKTOP SIDEBAR ══ -->
   <div class="sidebar">
     <div class="panel">
-      <div class="panel-title">Workflow</div>
+      <div class="ptitle">Workflow</div>
 
-      <div class="step-block active" id="step1">
-        <div class="step-num">01 / Upload</div>
-        <div class="step-title">Load floorplan</div>
-        <div class="step-desc">Drop or select an image of your floorplan.</div>
-        <button onclick="document.getElementById('file-input').click()">&#43; Choose image</button>
+      <div class="sblock on" id="sb1">
+        <div class="snum">01 / Upload</div>
+        <div class="stitle">Load floorplan</div>
+        <div class="sdesc">Drop or choose a floorplan image to begin.</div>
+        <button onclick="triggerFile()">&#43; Choose image</button>
       </div>
 
-      <div class="step-block" id="step2">
-        <div class="step-num">02 / Calibrate</div>
-        <div class="step-title">Set scale</div>
-        <div class="step-desc">Draw a line over a known dimension, then enter the real-world length.</div>
-        <div class="input-row">
+      <div class="sblock" id="sb2">
+        <div class="snum">02 / Calibrate</div>
+        <div class="stitle">Set scale</div>
+        <div class="sdesc">Draw a line over a known dimension, then enter its real-world length.</div>
+        <div class="irow">
           <label>Length</label>
-          <input type="number" id="ref-length" placeholder="e.g. 3.5" step="0.01" min="0.01">
+          <input type="number" id="ref-len" placeholder="e.g. 3.5" step="0.01" min="0.01">
           <select id="ref-unit">
             <option value="m">m</option><option value="cm">cm</option>
             <option value="ft">ft</option><option value="in">in</option>
           </select>
         </div>
-        <div style="display:flex;gap:5px;flex-wrap:wrap">
-          <button id="btn-draw-ref" onclick="startRefLine()">Draw ref line</button>
-          <button class="success" id="btn-set-scale" onclick="setScale()" style="display:none">Set scale</button>
+        <div style="display:flex;gap:5px;flex-wrap:wrap;">
+          <button onclick="startRef()">Draw ref line</button>
+          <button class="ok" id="btn-setscale" onclick="commitScale()" style="display:none;">Set scale</button>
         </div>
-        <div id="ref-status" style="font-size:10px;color:var(--muted);margin-top:6px;line-height:1.4"></div>
+        <div id="ref-msg" style="font-size:10px;color:var(--muted);margin-top:6px;line-height:1.5;"></div>
       </div>
 
-      <div class="step-block" id="step3">
-        <div class="step-num">03 / Measure</div>
-        <div class="step-title">Trace area</div>
-        <div class="step-desc">Click/tap to place polygon points. Click the first point or press ✓ to close.</div>
-        <div class="input-row">
+      <div class="sblock" id="sb3">
+        <div class="snum">03 / Measure</div>
+        <div class="stitle">Trace area</div>
+        <div class="sdesc">Click to place points. <strong>Hold Shift</strong> to snap to 15° angles. Double-click or ✓ to close.</div>
+        <div class="irow">
           <label>Label</label>
           <input type="text" id="room-label" placeholder="e.g. Bedroom 1">
         </div>
-        <div style="display:flex;gap:5px;flex-wrap:wrap">
-          <button class="primary" id="btn-trace" onclick="startTrace()">Start tracing</button>
-          <button class="success" id="btn-close-poly" onclick="closePoly()" style="display:none">&#x2713; Close</button>
-          <button class="danger"  id="btn-clear"     onclick="clearTrace()" style="display:none">Clear</button>
+        <div style="display:flex;gap:5px;flex-wrap:wrap;">
+          <button class="prim" onclick="startTrace()">Start tracing</button>
+          <button class="ok"  id="btn-close" onclick="closePoly()" style="display:none;">&#x2713; Close</button>
+          <button class="bad" id="btn-clrtrace" onclick="clearTrace()" style="display:none;">Clear</button>
         </div>
       </div>
     </div>
 
-    <div class="panel">
-      <div class="panel-title">Measurements</div>
-      <div id="area-list" class="area-list">
-        <div style="color:var(--muted);font-size:11px">No areas measured yet.</div>
-      </div>
-      <div style="margin-top:0.625rem;display:flex;gap:5px;flex-wrap:wrap">
-        <button onclick="exportResults()" id="btn-export" style="display:none">&#x2193; Export CSV</button>
-        <button class="danger" onclick="clearAll()" id="btn-clear-all" style="display:none">Clear all</button>
+    <div class="panel grow">
+      <div class="ptitle">Measurements</div>
+      <div id="area-list" class="alist"><div style="color:var(--muted);font-size:11px;">No areas yet.</div></div>
+      <div style="margin-top:.625rem;display:flex;gap:5px;flex-wrap:wrap;">
+        <button onclick="exportCSV()" id="btn-export" style="display:none;">&#x2193; Export CSV</button>
+        <button class="bad" onclick="clearAll()" id="btn-clearall" style="display:none;">Clear all</button>
       </div>
     </div>
   </div>
 
-  <!-- CANVAS -->
-  <div class="canvas-area">
-    <div class="canvas-toolbar">
-      <div class="zoom-controls">
-        <button onclick="zoom(-0.15)">&#x2212;</button>
-        <span id="zoom-label" style="min-width:40px;text-align:center;font-size:11px">100%</span>
-        <button onclick="zoom(0.15)">&#x2B;</button>
-        <button onclick="resetView()">Fit</button>
+  <!-- ══ CANVAS ══ -->
+  <div class="carea">
+    <div class="ctoolbar">
+      <div class="zctrl">
+        <button onclick="doZoom(-.15)">&#x2212;</button>
+        <span id="zoom-lbl" style="min-width:38px;text-align:center;">100%</span>
+        <button onclick="doZoom(.15)">&#x2B;</button>
+        <button onclick="fitView()">Fit</button>
       </div>
+      <div class="sep zsep"></div>
+      <span id="mode-label" style="flex-shrink:0;">Mode: <strong style="color:var(--accent2);">upload</strong></span>
       <div class="sep"></div>
-      <span id="mode-label">Mode: <strong style="color:var(--accent2)">upload</strong></span>
-      <div class="sep"></div>
-      <span id="coord-label" style="color:var(--muted);font-size:10px"></span>
+      <span id="coord-label" style="color:var(--muted);font-size:10px;"></span>
+      <div id="snap-badge">&#x2220; Snap 15°</div>
     </div>
 
-    <div class="canvas-wrap" id="canvas-wrap">
-      <div id="drop-overlay" onclick="document.getElementById('file-input').click()">
-        <div class="drop-icon">&#9974;</div>
-        <div class="drop-text">Drop a floorplan here</div>
-        <div class="drop-sub">PNG &middot; JPG &middot; WebP &middot; tap to browse</div>
+    <div class="cwrap" id="cwrap">
+      <div id="drop-ov" onclick="triggerFile()">
+        <div class="dicon">&#9974;</div>
+        <div class="dtxt">Drop a floorplan here</div>
+        <div class="dsub">PNG · JPG · WebP · tap to browse</div>
       </div>
-      <canvas id="main-canvas"></canvas>
+      <canvas id="cv"></canvas>
     </div>
 
-    <div class="results-panel" id="results-panel">
-      <div class="result-card">
-        <div class="result-label">Latest area</div>
-        <div><span class="result-value" id="res-area">—</span><span class="result-unit" id="res-unit"></span></div>
+    <div class="rbar" id="rbar">
+      <div class="rcard">
+        <div class="rlabel">Latest area</div>
+        <div><span class="rval" id="r-area">—</span><span class="runit" id="r-unit"></span></div>
       </div>
-      <div class="result-card">
-        <div class="result-label">Scale</div>
-        <div><span class="result-value" id="res-scale" style="font-size:15px;color:var(--accent2)">—</span></div>
+      <div class="rcard">
+        <div class="rlabel">Scale</div>
+        <div><span class="rval" id="r-scale" style="font-size:14px;color:var(--accent2);">—</span></div>
       </div>
-      <div style="flex:1"></div>
-      <span class="hint-tag">trace another room to add more</span>
+      <div style="flex:1;"></div>
+      <span class="htag">trace another room to add more</span>
     </div>
   </div>
 </div>
 
-<!-- MOBILE BOTTOM NAV -->
-<nav class="mobile-nav" id="mobile-nav">
-  <button class="nav-active" id="mnav-1" onclick="mobileTab(1)">
-    <span class="nav-icon">&#x2B06;</span>
-    <span class="nav-label">Upload</span>
+<!-- ══ MOBILE BOTTOM NAV ══ -->
+<nav class="mnav" id="mnav">
+  <button id="mn1" onclick="mTab(1)">
+    <span class="ni">&#x2B06;</span><span class="nl">Upload</span>
   </button>
-  <button id="mnav-2" onclick="mobileTab(2)">
-    <span class="nav-icon">&#x2194;</span>
-    <span class="nav-label">Calibrate</span>
+  <button id="mn2" onclick="mTab(2)">
+    <span class="ni">&#x2194;</span><span class="nl">Calibrate</span>
   </button>
-  <button id="mnav-3" onclick="mobileTab(3)">
-    <span class="nav-icon">&#x25A1;</span>
-    <span class="nav-label">Trace</span>
+  <button id="mn3" onclick="mTab(3)">
+    <span class="ni">&#x25A1;</span><span class="nl">Trace</span>
   </button>
-  <button id="mnav-4" onclick="mobileTab(4)">
-    <span class="nav-icon">&#x2637;</span>
-    <span class="nav-label">Results</span>
+  <button id="mn4" onclick="mTab(4)">
+    <span class="ni">&#x2637;</span><span class="nl">Results</span>
   </button>
 </nav>
 
-<!-- BOTTOM SHEET -->
-<div class="bottom-sheet" id="bottom-sheet">
-  <div class="sheet-handle"></div>
-  <button class="sheet-close" onclick="closeSheet()">&#x2715;</button>
-  <div class="sheet-content" id="sheet-content"></div>
+<!-- ══ BOTTOM SHEET ══ -->
+<div class="bsheet" id="bsheet">
+  <div class="bhandle"></div>
+  <button class="bclose" onclick="closeSheet()">&#x2715;</button>
+  <div class="bscroll" id="bscroll"></div>
 </div>
 
-<input type="file" id="file-input" accept="image/*" style="display:none">
+<input type="file" id="file-in" accept="image/*" style="display:none;">
 
 <script>
-const canvas = document.getElementById('main-canvas');
-const ctx = canvas.getContext('2d');
-const wrap = document.getElementById('canvas-wrap');
+/* ─── state ─── */
+const cv = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+const cwrap = document.getElementById('cwrap');
 
-const COLORS = ['#3b82f6','#34d399','#fbbf24','#f87171','#60a5fa','#6ee7b7','#fcd34d','#fca5a5'];
+const COLORS = ['#2563eb','#34d399','#fbbf24','#f87171','#60a5fa','#6ee7b7','#fcd34d','#fca5a5','#a78bfa'];
 
-let state = {
-  mode:'idle', img:null, imgW:0, imgH:0,
-  zoom:1, offsetX:0, offsetY:0,
-  refPts:[], refPixels:null, realScale:null, refUnit:'m',
-  tracePoints:[], areas:[],
-  dragging:false, dragStart:{x:0,y:0}, dragOrigin:{x:0,y:0},
-  mouseCanvas:{x:0,y:0}, pinchDist:null,
+let S = {
+  mode:'idle', img:null, iw:0, ih:0,
+  zoom:1, ox:0, oy:0,
+  refPts:[], refPx:null, scale:null, unit:'m',
+  pts:[], areas:[],
+  drag:false, ds:{x:0,y:0}, do_:{x:0,y:0},
+  mc:{x:0,y:0},
+  shiftDown:false,
+  pinchD:null,
 };
 
-function resizeCanvas() { canvas.width=wrap.clientWidth; canvas.height=wrap.clientHeight; draw(); }
-window.addEventListener('resize', resizeCanvas);
-resizeCanvas();
+/* ─── resize ─── */
+function rszCv(){ cv.width=cwrap.clientWidth; cv.height=cwrap.clientHeight; draw(); }
+window.addEventListener('resize', rszCv);
+rszCv();
 
-document.getElementById('file-input').addEventListener('change', e => {
-  if (e.target.files[0]) loadImage(e.target.files[0]);
+/* ─── file ─── */
+function triggerFile(){ document.getElementById('file-in').click(); }
+document.getElementById('file-in').addEventListener('change', e=>{
+  if(e.target.files[0]) loadImg(e.target.files[0]);
   e.target.value='';
 });
-
-const dropOverlay = document.getElementById('drop-overlay');
-wrap.addEventListener('dragover',  e => { e.preventDefault(); dropOverlay.classList.add('drag-over'); });
-wrap.addEventListener('dragleave', () => dropOverlay.classList.remove('drag-over'));
-wrap.addEventListener('drop', e => {
-  e.preventDefault(); dropOverlay.classList.remove('drag-over');
+const dropOv = document.getElementById('drop-ov');
+cwrap.addEventListener('dragover',  e=>{ e.preventDefault(); dropOv.classList.add('drag'); });
+cwrap.addEventListener('dragleave', ()=>dropOv.classList.remove('drag'));
+cwrap.addEventListener('drop', e=>{
+  e.preventDefault(); dropOv.classList.remove('drag');
   const f=e.dataTransfer.files[0];
-  if (f&&f.type.startsWith('image/')) loadImage(f);
+  if(f&&f.type.startsWith('image/')) loadImg(f);
 });
-
-function loadImage(file) {
-  const reader=new FileReader();
-  reader.onload=ev=>{
+function loadImg(file){
+  const r=new FileReader();
+  r.onload=ev=>{
     const img=new Image();
     img.onload=()=>{
-      state.img=img; state.imgW=img.width; state.imgH=img.height;
-      dropOverlay.style.display='none';
-      fitImage(); setStep(2);
+      S.img=img; S.iw=img.width; S.ih=img.height;
+      dropOv.style.display='none';
+      fitView(); setStep(2);
     };
     img.src=ev.target.result;
   };
-  reader.readAsDataURL(file);
+  r.readAsDataURL(file);
 }
 
-function fitImage() {
-  const pw=wrap.clientWidth, ph=wrap.clientHeight;
-  const r=Math.min((pw-32)/state.imgW,(ph-32)/state.imgH,1);
-  state.zoom=r; state.offsetX=(pw-state.imgW*r)/2; state.offsetY=(ph-state.imgH*r)/2;
-  updateZoomLabel(); draw();
+/* ─── view helpers ─── */
+function fitView(){
+  const pw=cwrap.clientWidth, ph=cwrap.clientHeight;
+  const r=Math.min((pw-28)/S.iw,(ph-28)/S.ih,1);
+  S.zoom=r; S.ox=(pw-S.iw*r)/2; S.oy=(ph-S.ih*r)/2;
+  updZoom(); draw();
+}
+function tc(ix,iy){ return {x:ix*S.zoom+S.ox, y:iy*S.zoom+S.oy}; }
+function ti(cx,cy){ return {x:(cx-S.ox)/S.zoom, y:(cy-S.oy)/S.zoom}; }
+
+/* ─── snapping ─── */
+function snapAngle(fromPt, raw){
+  if(!S.shiftDown || !fromPt) return raw;
+  const dx=raw.x-fromPt.x, dy=raw.y-fromPt.y;
+  const dist=Math.sqrt(dx*dx+dy*dy);
+  if(dist<1) return raw;
+  const ang=Math.atan2(dy,dx);
+  const step=Math.PI/12; // 15 degrees
+  const snapped=Math.round(ang/step)*step;
+  return {x:fromPt.x+dist*Math.cos(snapped), y:fromPt.y+dist*Math.sin(snapped)};
 }
 
-function toCanvas(ix,iy){ return {x:ix*state.zoom+state.offsetX, y:iy*state.zoom+state.offsetY}; }
-function toImage(cx,cy) { return {x:(cx-state.offsetX)/state.zoom, y:(cy-state.offsetY)/state.zoom}; }
-
-function draw() {
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  if (!state.img) return;
-  ctx.drawImage(state.img,state.offsetX,state.offsetY,state.imgW*state.zoom,state.imgH*state.zoom);
-  drawAreas(); drawRefLine(); drawCurrentTrace();
+/* ─── draw ─── */
+function draw(){
+  ctx.clearRect(0,0,cv.width,cv.height);
+  if(!S.img) return;
+  ctx.drawImage(S.img,S.ox,S.oy,S.iw*S.zoom,S.ih*S.zoom);
+  drawAreas(); drawRef(); drawTrace();
 }
 
-function drawAreas() {
-  state.areas.forEach((area,i)=>{
-    if (area.points.length<2) return;
+function drawAreas(){
+  S.areas.forEach((a,i)=>{
+    if(a.points.length<2) return;
     const col=COLORS[i%COLORS.length];
     ctx.beginPath();
-    const p0=toCanvas(area.points[0].x,area.points[0].y);
+    const p0=tc(a.points[0].x,a.points[0].y);
     ctx.moveTo(p0.x,p0.y);
-    area.points.forEach(p=>{ const c=toCanvas(p.x,p.y); ctx.lineTo(c.x,c.y); });
+    a.points.forEach(p=>{ const c=tc(p.x,p.y); ctx.lineTo(c.x,c.y); });
     ctx.closePath();
-    ctx.fillStyle=col+'26'; ctx.fill();
+    ctx.fillStyle=col+'22'; ctx.fill();
     ctx.strokeStyle=col; ctx.lineWidth=1.5; ctx.stroke();
-    const cx=area.points.reduce((s,p)=>s+p.x,0)/area.points.length;
-    const cy=area.points.reduce((s,p)=>s+p.y,0)/area.points.length;
-    const cc=toCanvas(cx,cy);
-    ctx.fillStyle='#fff'; ctx.font='500 11px DM Mono,monospace';
+    const cx=a.points.reduce((s,p)=>s+p.x,0)/a.points.length;
+    const cy=a.points.reduce((s,p)=>s+p.y,0)/a.points.length;
+    const cc=tc(cx,cy);
+    ctx.fillStyle='rgba(255,255,255,0.9)'; ctx.font='500 11px DM Mono,monospace';
     ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillText(area.label||`Area ${i+1}`,cc.x,cc.y-8);
+    ctx.fillText(a.label||`Area ${i+1}`,cc.x,cc.y-8);
     ctx.fillStyle=col; ctx.font='400 10px DM Mono,monospace';
-    ctx.fillText(formatArea(area.sqm)+' '+getAreaUnit(area.unit),cc.x,cc.y+8);
+    ctx.fillText(fmtA(a.sqm)+' '+unitStr(a.unit),cc.x,cc.y+8);
   });
 }
 
-function drawRefLine() {
-  if (!state.refPts.length) return;
+function drawRef(){
+  if(!S.refPts.length) return;
   const col='#fbbf24';
-  ctx.strokeStyle=col; ctx.lineWidth=2;
-  state.refPts.forEach(p=>{
-    const c=toCanvas(p.x,p.y);
+  ctx.setLineDash([]); ctx.strokeStyle=col; ctx.lineWidth=2;
+  S.refPts.forEach(p=>{
+    const c=tc(p.x,p.y);
     ctx.beginPath(); ctx.arc(c.x,c.y,5,0,Math.PI*2);
-    ctx.setLineDash([]); ctx.fillStyle=col; ctx.fill();
+    ctx.fillStyle=col; ctx.fill();
   });
-  if (state.refPts.length===2) {
-    const c0=toCanvas(state.refPts[0].x,state.refPts[0].y);
-    const c1=toCanvas(state.refPts[1].x,state.refPts[1].y);
+  if(S.refPts.length===2){
+    const c0=tc(S.refPts[0].x,S.refPts[0].y), c1=tc(S.refPts[1].x,S.refPts[1].y);
     ctx.setLineDash([6,3]); ctx.beginPath(); ctx.moveTo(c0.x,c0.y); ctx.lineTo(c1.x,c1.y); ctx.stroke();
-    const dx=c1.x-c0.x,dy=c1.y-c0.y,px=Math.round(Math.sqrt(dx*dx+dy*dy));
+    const dx=c1.x-c0.x,dy=c1.y-c0.y;
     ctx.setLineDash([]); ctx.fillStyle=col; ctx.font='400 11px DM Mono,monospace';
     ctx.textAlign='center'; ctx.textBaseline='bottom';
-    ctx.fillText(px+'px',(c0.x+c1.x)/2,Math.min(c0.y,c1.y)-4);
-  } else if (state.refPts.length===1 && state.mode==='ref') {
-    const c0=toCanvas(state.refPts[0].x,state.refPts[0].y);
+    ctx.fillText(Math.round(Math.sqrt(dx*dx+dy*dy))+'px',(c0.x+c1.x)/2,Math.min(c0.y,c1.y)-4);
+  } else if(S.refPts.length===1 && S.mode==='ref'){
+    const c0=tc(S.refPts[0].x,S.refPts[0].y);
     ctx.setLineDash([4,4]); ctx.beginPath();
-    ctx.moveTo(c0.x,c0.y); ctx.lineTo(state.mouseCanvas.x,state.mouseCanvas.y); ctx.stroke();
+    ctx.moveTo(c0.x,c0.y); ctx.lineTo(S.mc.x,S.mc.y); ctx.stroke();
   }
   ctx.setLineDash([]);
 }
 
-function drawCurrentTrace() {
-  if (!state.tracePoints.length) return;
-  const col='#3b82f6';
+function drawTrace(){
+  if(!S.pts.length) return;
+  const col='#2563eb';
+  // compute effective mouse position (may be snapped)
+  let mEff=S.mc;
+  const lastImgPt = S.pts.length>0 ? S.pts[S.pts.length-1] : null;
+  if(S.mode==='trace' && S.shiftDown && lastImgPt){
+    const rawImg=ti(S.mc.x,S.mc.y);
+    const snapped=snapAngle(lastImgPt,rawImg);
+    mEff=tc(snapped.x,snapped.y);
+  }
+
   ctx.strokeStyle=col; ctx.lineWidth=2;
   ctx.beginPath();
-  const p0c=toCanvas(state.tracePoints[0].x,state.tracePoints[0].y);
+  const p0c=tc(S.pts[0].x,S.pts[0].y);
   ctx.moveTo(p0c.x,p0c.y);
-  state.tracePoints.forEach(p=>{ const c=toCanvas(p.x,p.y); ctx.lineTo(c.x,c.y); });
-  if (state.mode==='trace') {
-    ctx.lineTo(state.mouseCanvas.x,state.mouseCanvas.y);
-    if (state.tracePoints.length>1 && dist2d(state.mouseCanvas.x,state.mouseCanvas.y,p0c.x,p0c.y)<20) {
-      ctx.closePath(); ctx.fillStyle=col+'35'; ctx.fill();
+  S.pts.forEach(p=>{ const c=tc(p.x,p.y); ctx.lineTo(c.x,c.y); });
+
+  if(S.mode==='trace'){
+    ctx.lineTo(mEff.x,mEff.y);
+    if(S.pts.length>1 && d2d(mEff.x,mEff.y,p0c.x,p0c.y)<20){
+      ctx.closePath(); ctx.fillStyle=col+'32'; ctx.fill();
     }
   }
   ctx.stroke();
-  state.tracePoints.forEach((p,i)=>{
-    const c=toCanvas(p.x,p.y);
+
+  S.pts.forEach((p,i)=>{
+    const c=tc(p.x,p.y);
     ctx.beginPath(); ctx.arc(c.x,c.y,i===0?7:4,0,Math.PI*2);
     ctx.fillStyle=i===0?col:'#fff'; ctx.fill();
     ctx.strokeStyle=col; ctx.lineWidth=1.5; ctx.stroke();
   });
-  if (state.mode==='trace' && state.tracePoints.length>0 && state.realScale) {
-    const lp=toCanvas(state.tracePoints[state.tracePoints.length-1].x,state.tracePoints[state.tracePoints.length-1].y);
-    const dx=state.mouseCanvas.x-lp.x,dy=state.mouseCanvas.y-lp.y,segPx=Math.sqrt(dx*dx+dy*dy);
-    if (segPx>5) {
-      const sr=(segPx/state.zoom/state.realScale).toFixed(2);
+
+  // live segment length label
+  if(S.mode==='trace' && S.pts.length>0 && S.scale){
+    const lp=tc(S.pts[S.pts.length-1].x,S.pts[S.pts.length-1].y);
+    const dx=mEff.x-lp.x, dy=mEff.y-lp.y, seg=Math.sqrt(dx*dx+dy*dy);
+    if(seg>5){
+      const real=(seg/S.zoom/S.scale).toFixed(2);
       ctx.fillStyle=col; ctx.font='400 10px DM Mono,monospace';
       ctx.textAlign='left'; ctx.textBaseline='top';
-      ctx.fillText(sr+state.refUnit,state.mouseCanvas.x+8,state.mouseCanvas.y+4);
+      ctx.fillText(real+S.unit, mEff.x+8, mEff.y+4);
     }
+  }
+
+  // snap indicator dot
+  if(S.mode==='trace' && S.shiftDown && lastImgPt && mEff!==S.mc){
+    ctx.beginPath(); ctx.arc(mEff.x,mEff.y,4,0,Math.PI*2);
+    ctx.fillStyle='#fbbf24'; ctx.fill();
   }
 }
 
-function dist2d(x1,y1,x2,y2){ return Math.sqrt((x1-x2)**2+(y1-y2)**2); }
+function d2d(x1,y1,x2,y2){ return Math.sqrt((x1-x2)**2+(y1-y2)**2); }
 
-/* ── MOUSE ── */
-canvas.addEventListener('mousedown', e=>{
-  if (!state.img) return;
-  if (e.button===1||e.altKey) {
-    state.dragging=true;
-    state.dragStart={x:e.clientX,y:e.clientY};
-    state.dragOrigin={x:state.offsetX,y:state.offsetY};
+/* ─── MOUSE ─── */
+document.addEventListener('keydown', e=>{ if(e.key==='Shift'){ S.shiftDown=true; document.getElementById('snap-badge').style.display='flex'; draw(); }});
+document.addEventListener('keyup',   e=>{ if(e.key==='Shift'){ S.shiftDown=false; document.getElementById('snap-badge').style.display='none'; draw(); }});
+
+cv.addEventListener('mousedown', e=>{
+  if(!S.img) return;
+  if(e.button===1||e.altKey){
+    S.drag=true; S.ds={x:e.clientX,y:e.clientY}; S.do_={x:S.ox,y:S.oy};
   }
 });
 
-canvas.addEventListener('mousemove', e=>{
-  const r=canvas.getBoundingClientRect();
-  state.mouseCanvas={x:e.clientX-r.left,y:e.clientY-r.top};
-  const ip=toImage(state.mouseCanvas.x,state.mouseCanvas.y);
+cv.addEventListener('mousemove', e=>{
+  const r=cv.getBoundingClientRect();
+  S.mc={x:e.clientX-r.left, y:e.clientY-r.top};
+  const ip=ti(S.mc.x,S.mc.y);
   document.getElementById('coord-label').textContent=`x:${Math.round(ip.x)} y:${Math.round(ip.y)}`;
-  if (state.dragging){
-    state.offsetX=state.dragOrigin.x+(e.clientX-state.dragStart.x);
-    state.offsetY=state.dragOrigin.y+(e.clientY-state.dragStart.y);
-  }
+  if(S.drag){ S.ox=S.do_.x+(e.clientX-S.ds.x); S.oy=S.do_.y+(e.clientY-S.ds.y); }
   draw();
 });
 
-canvas.addEventListener('mouseup', e=>{
-  if (state.dragging){state.dragging=false;return;}
-  if (!state.img) return;
-  const r=canvas.getBoundingClientRect();
-  handleTap(e.clientX-r.left,e.clientY-r.top);
+cv.addEventListener('mouseup', e=>{
+  if(S.drag){ S.drag=false; return; }
+  if(!S.img) return;
+  const r=cv.getBoundingClientRect();
+  handleTap(e.clientX-r.left, e.clientY-r.top);
 });
 
-canvas.addEventListener('dblclick', e=>{
-  if (state.mode==='trace'&&state.tracePoints.length>=3) closePoly();
-});
+cv.addEventListener('dblclick', ()=>{ if(S.mode==='trace'&&S.pts.length>=3) closePoly(); });
 
-canvas.addEventListener('wheel', e=>{
+cv.addEventListener('wheel', e=>{
   e.preventDefault();
-  zoom(e.deltaY>0?-0.1:0.1,e.clientX-canvas.getBoundingClientRect().left,e.clientY-canvas.getBoundingClientRect().top);
+  const r=cv.getBoundingClientRect();
+  doZoom(e.deltaY>0?-.1:.1, e.clientX-r.left, e.clientY-r.top);
 },{passive:false});
 
-/* ── TOUCH ── */
-let touchStartPos=null, touchStartOffset=null;
-
-canvas.addEventListener('touchstart', e=>{
+/* ─── TOUCH ─── */
+let tStart=null, tOff=null;
+cv.addEventListener('touchstart', e=>{
   e.preventDefault();
-  if (e.touches.length===2){
-    state.pinchDist=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
-    state.dragging=false; return;
+  if(e.touches.length===2){
+    S.pinchD=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
+    S.drag=false; return;
   }
-  if (e.touches.length===1){
-    const r=canvas.getBoundingClientRect(),t=e.touches[0];
-    touchStartPos={x:t.clientX,y:t.clientY};
-    touchStartOffset={x:state.offsetX,y:state.offsetY};
-    state.mouseCanvas={x:t.clientX-r.left,y:t.clientY-r.top};
-  }
+  const r=cv.getBoundingClientRect(), t=e.touches[0];
+  tStart={x:t.clientX,y:t.clientY};
+  tOff={x:S.ox,y:S.oy};
+  S.mc={x:t.clientX-r.left, y:t.clientY-r.top};
 },{passive:false});
 
-canvas.addEventListener('touchmove', e=>{
+cv.addEventListener('touchmove', e=>{
   e.preventDefault();
-  const r=canvas.getBoundingClientRect();
-  if (e.touches.length===2&&state.pinchDist!==null){
+  const r=cv.getBoundingClientRect();
+  if(e.touches.length===2&&S.pinchD!==null){
     const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
     const mx=(e.touches[0].clientX+e.touches[1].clientX)/2-r.left;
     const my=(e.touches[0].clientY+e.touches[1].clientY)/2-r.top;
-    zoom((d-state.pinchDist)*0.012,mx,my);
-    state.pinchDist=d; return;
+    doZoom((d-S.pinchD)*.012,mx,my);
+    S.pinchD=d; return;
   }
-  if (e.touches.length===1&&touchStartPos){
+  if(e.touches.length===1&&tStart){
     const t=e.touches[0];
-    const moved=dist2d(t.clientX,t.clientY,touchStartPos.x,touchStartPos.y);
-    state.mouseCanvas={x:t.clientX-r.left,y:t.clientY-r.top};
-    if (moved>8){
-      state.offsetX=touchStartOffset.x+(t.clientX-touchStartPos.x);
-      state.offsetY=touchStartOffset.y+(t.clientY-touchStartPos.y);
-    }
+    S.mc={x:t.clientX-r.left, y:t.clientY-r.top};
+    const moved=d2d(t.clientX,t.clientY,tStart.x,tStart.y);
+    if(moved>8){ S.ox=tOff.x+(t.clientX-tStart.x); S.oy=tOff.y+(t.clientY-tStart.y); }
     draw();
   }
 },{passive:false});
 
-canvas.addEventListener('touchend', e=>{
-  e.preventDefault();
-  state.pinchDist=null;
-  if (e.changedTouches.length===1&&touchStartPos){
+cv.addEventListener('touchend', e=>{
+  e.preventDefault(); S.pinchD=null;
+  if(e.changedTouches.length===1&&tStart){
     const t=e.changedTouches[0];
-    if (dist2d(t.clientX,t.clientY,touchStartPos.x,touchStartPos.y)<12&&state.img){
-      const r=canvas.getBoundingClientRect();
+    if(d2d(t.clientX,t.clientY,tStart.x,tStart.y)<12&&S.img){
+      const r=cv.getBoundingClientRect();
       handleTap(t.clientX-r.left,t.clientY-r.top);
     }
   }
-  touchStartPos=null;
+  tStart=null;
 },{passive:false});
 
 function handleTap(cx,cy){
-  const ip=toImage(cx,cy);
-  if (state.mode==='ref'){
-    state.refPts.push(ip);
-    if (state.refPts.length===2){
-      const dx=state.refPts[1].x-state.refPts[0].x,dy=state.refPts[1].y-state.refPts[0].y;
-      state.refPixels=Math.sqrt(dx*dx+dy*dy);
-      document.getElementById('ref-status').textContent=`Line: ${Math.round(state.refPixels)}px — enter real length & set scale`;
-      document.getElementById('btn-set-scale').style.display='inline-flex';
-      state.mode='ref-done'; syncMobileSheet(2);
+  if(S.mode==='ref'){
+    S.refPts.push(ti(cx,cy));
+    if(S.refPts.length===2){
+      const dx=S.refPts[1].x-S.refPts[0].x, dy=S.refPts[1].y-S.refPts[0].y;
+      S.refPx=Math.sqrt(dx*dx+dy*dy);
+      document.getElementById('ref-msg').textContent=`Line: ${Math.round(S.refPx)}px — enter real length then Set scale`;
+      document.getElementById('btn-setscale').style.display='inline-flex';
+      S.mode='ref-done'; syncSheet(2);
     }
     draw();
-  } else if (state.mode==='trace'){
-    const p0c=state.tracePoints[0]&&toCanvas(state.tracePoints[0].x,state.tracePoints[0].y);
-    if (state.tracePoints.length>2&&p0c&&dist2d(cx,cy,p0c.x,p0c.y)<20){closePoly();return;}
-    state.tracePoints.push(ip);
-    document.getElementById('btn-close-poly').style.display='inline-flex';
-    document.getElementById('btn-clear').style.display='inline-flex';
-    syncMobileSheet(3); draw();
+  } else if(S.mode==='trace'){
+    let ip=ti(cx,cy);
+    const lastPt=S.pts.length>0?S.pts[S.pts.length-1]:null;
+    ip=snapAngle(lastPt,ip);
+    const p0c=S.pts[0]&&tc(S.pts[0].x,S.pts[0].y);
+    if(S.pts.length>2&&p0c&&d2d(cx,cy,p0c.x,p0c.y)<20){closePoly();return;}
+    S.pts.push(ip);
+    document.getElementById('btn-close').style.display='inline-flex';
+    document.getElementById('btn-clrtrace').style.display='inline-flex';
+    syncSheet(3); draw();
   }
 }
 
-function zoom(delta,cx,cy){
-  if (!state.img) return;
-  cx=cx??canvas.width/2; cy=cy??canvas.height/2;
-  const nz=Math.max(0.08,Math.min(10,state.zoom+delta));
-  const f=nz/state.zoom;
-  state.offsetX=cx-f*(cx-state.offsetX);
-  state.offsetY=cy-f*(cy-state.offsetY);
-  state.zoom=nz; updateZoomLabel(); draw();
+/* ─── zoom ─── */
+function doZoom(delta,cx,cy){
+  if(!S.img) return;
+  cx=cx??cv.width/2; cy=cy??cv.height/2;
+  const nz=Math.max(.07,Math.min(12,S.zoom+delta));
+  const f=nz/S.zoom;
+  S.ox=cx-f*(cx-S.ox); S.oy=cy-f*(cy-S.oy); S.zoom=nz;
+  updZoom(); draw();
 }
-function updateZoomLabel(){ document.getElementById('zoom-label').textContent=Math.round(state.zoom*100)+'%'; }
-function resetView(){ if(state.img) fitImage(); }
+function updZoom(){ document.getElementById('zoom-lbl').textContent=Math.round(S.zoom*100)+'%'; }
 
+/* ─── steps ─── */
 function setStep(n){
   for(let i=1;i<=3;i++){
-    const b=document.getElementById(`step${i}`),d=document.getElementById(`dot-${i}`);
-    if(i<n){b.classList.remove('active');b.classList.add('done');d.classList.remove('active');d.classList.add('done');}
-    else if(i===n){b.classList.add('active');b.classList.remove('done');d.classList.add('active');d.classList.remove('done');}
-    else{b.classList.remove('active','done');d.classList.remove('active','done');}
+    const b=document.getElementById(`sb${i}`),d=document.getElementById(`d${i}`);
+    if(!b||!d) continue;
+    b.classList.remove('on','done'); d.classList.remove('on','done');
+    if(i<n){b.classList.add('done');d.classList.add('done');}
+    else if(i===n){b.classList.add('on');d.classList.add('on');}
   }
-  const labels=['upload','calibrate','trace'];
-  document.getElementById('mode-label').innerHTML=`Mode: <strong style="color:var(--accent2)">${labels[n-1]}</strong>`;
-  updateMobileNav(n);
+  const ml=['upload','calibrate','trace'];
+  document.getElementById('mode-label').innerHTML=`Mode: <strong style="color:var(--accent2);">${ml[n-1]}</strong>`;
+  updMnav(n);
 }
 
-function startRefLine(){
-  state.mode='ref'; state.refPts=[]; state.refPixels=null; state.realScale=null;
-  document.getElementById('btn-set-scale').style.display='none';
-  document.getElementById('ref-status').textContent='Tap two points on a known dimension';
-  document.getElementById('mode-label').innerHTML=`Mode: <strong style="color:var(--amber)">drawing reference</strong>`;
+/* ─── calibration ─── */
+function startRef(){
+  S.mode='ref'; S.refPts=[]; S.refPx=null; S.scale=null;
+  document.getElementById('btn-setscale').style.display='none';
+  document.getElementById('ref-msg').textContent='Click two points on a known dimension';
+  document.getElementById('mode-label').innerHTML=`Mode: <strong style="color:var(--amber);">ref line</strong>`;
   draw();
 }
 
-function setScale(){
-  const val=parseFloat(document.getElementById('ref-length').value);
+function commitScale(){
+  const val=parseFloat(document.getElementById('ref-len').value);
   const unit=document.getElementById('ref-unit').value;
-  if(!val||val<=0){alert('Enter a valid real-world length.');return;}
-  if(!state.refPixels){alert('Draw a reference line first.');return;}
-  state.realScale=state.refPixels/val; state.refUnit=unit;
-  document.getElementById('ref-status').textContent=`Scale: 1${unit} = ${state.realScale.toFixed(1)}px`;
-  document.getElementById('res-scale').textContent=`${state.realScale.toFixed(1)}px/${unit}`;
-  document.getElementById('results-panel').classList.add('visible');
-  setStep(3); state.mode='idle';
-  document.getElementById('mode-label').innerHTML=`Mode: <strong style="color:var(--green)">calibrated</strong>`;
+  if(!val||val<=0){alert('Enter a valid length.');return;}
+  if(!S.refPx){alert('Draw a reference line first.');return;}
+  S.scale=S.refPx/val; S.unit=unit;
+  document.getElementById('ref-msg').textContent=`Scale set: 1${unit} = ${S.scale.toFixed(1)}px`;
+  document.getElementById('r-scale').textContent=`${S.scale.toFixed(1)}px/${unit}`;
+  document.getElementById('rbar').classList.add('on');
+  setStep(3); S.mode='idle';
+  document.getElementById('mode-label').innerHTML=`Mode: <strong style="color:var(--green);">calibrated</strong>`;
   closeSheet();
 }
 
+/* ─── tracing ─── */
 function startTrace(){
-  if(!state.realScale){alert('Please calibrate the scale first.');return;}
-  state.mode='trace'; state.tracePoints=[];
-  document.getElementById('btn-close-poly').style.display='none';
-  document.getElementById('btn-clear').style.display='none';
-  document.getElementById('mode-label').innerHTML=`Mode: <strong style="color:var(--accent2)">tracing</strong>`;
+  if(!S.scale){alert('Calibrate scale first.');return;}
+  S.mode='trace'; S.pts=[];
+  document.getElementById('btn-close').style.display='none';
+  document.getElementById('btn-clrtrace').style.display='none';
+  document.getElementById('mode-label').innerHTML=`Mode: <strong style="color:var(--accent2);">tracing</strong>`;
   draw();
 }
 
 function closePoly(){
-  if(state.tracePoints.length<3){alert('Need at least 3 points.');return;}
-  const pts=state.tracePoints; let px=0;
-  for(let i=0;i<pts.length;i++){const j=(i+1)%pts.length;px+=pts[i].x*pts[j].y;px-=pts[j].x*pts[i].y;}
+  if(S.pts.length<3){alert('Need at least 3 points.');return;}
+  let px=0;
+  for(let i=0;i<S.pts.length;i++){const j=(i+1)%S.pts.length;px+=S.pts[i].x*S.pts[j].y;px-=S.pts[j].x*S.pts[i].y;}
   px=Math.abs(px)/2;
-  const sqm=px/(state.realScale*state.realScale);
-  const label=document.getElementById('room-label').value||`Area ${state.areas.length+1}`;
-  state.areas.push({points:[...pts],sqm,label,unit:state.refUnit});
-  document.getElementById('res-area').textContent=formatArea(sqm);
-  document.getElementById('res-unit').textContent=getAreaUnit(state.refUnit);
-  updateAreaList();
-  state.tracePoints=[]; state.mode='idle';
-  document.getElementById('btn-close-poly').style.display='none';
-  document.getElementById('btn-clear').style.display='none';
+  const sqm=px/(S.scale*S.scale);
+  const label=document.getElementById('room-label').value||`Area ${S.areas.length+1}`;
+  S.areas.push({points:[...S.pts],sqm,label,unit:S.unit});
+  document.getElementById('r-area').textContent=fmtA(sqm);
+  document.getElementById('r-unit').textContent=unitStr(S.unit);
+  updateList();
+  S.pts=[]; S.mode='idle';
+  document.getElementById('btn-close').style.display='none';
+  document.getElementById('btn-clrtrace').style.display='none';
   document.getElementById('room-label').value='';
-  document.getElementById('mode-label').innerHTML=`Mode: <strong style="color:var(--green)">area saved</strong>`;
+  document.getElementById('mode-label').innerHTML=`Mode: <strong style="color:var(--green);">area saved</strong>`;
   draw(); closeSheet();
 }
 
 function clearTrace(){
-  state.tracePoints=[]; state.mode='idle';
-  document.getElementById('btn-close-poly').style.display='none';
-  document.getElementById('btn-clear').style.display='none';
+  S.pts=[]; S.mode='idle';
+  document.getElementById('btn-close').style.display='none';
+  document.getElementById('btn-clrtrace').style.display='none';
   draw();
 }
+function clearAll(){ S.areas=[]; S.pts=[]; updateList(); draw(); }
 
-function clearAll(){ state.areas=[]; state.tracePoints=[]; updateAreaList(); draw(); }
+/* ─── formatting ─── */
+function fmtA(v){ return v.toFixed(2); }
+function unitStr(u){ return {m:'m²',cm:'cm²',ft:'ft²',in:'in²'}[u]||u+'²'; }
 
-function formatArea(v){ return v.toFixed(2); }
-function getAreaUnit(u){ return {m:'m²',cm:'cm²',ft:'ft²',in:'in²'}[u]||u+'²'; }
-
-function updateAreaList(){
-  const list=document.getElementById('area-list');
-  const bE=document.getElementById('btn-export'),bC=document.getElementById('btn-clear-all');
-  if(!state.areas.length){
-    list.innerHTML='<div style="color:var(--muted);font-size:11px">No areas measured yet.</div>';
+function updateList(){
+  const el=document.getElementById('area-list');
+  const bE=document.getElementById('btn-export'),bC=document.getElementById('btn-clearall');
+  if(!S.areas.length){
+    el.innerHTML='<div style="color:var(--muted);font-size:11px;">No areas yet.</div>';
     bE.style.display='none'; bC.style.display='none'; return;
   }
   bE.style.display='inline-flex'; bC.style.display='inline-flex';
-  list.innerHTML=state.areas.map((a,i)=>`
-    <div class="area-item">
-      <span style="display:flex;align-items:center;min-width:0">
-        <span class="area-color" style="background:${COLORS[i%COLORS.length]}"></span>
-        <span class="area-name">${a.label}</span>
+  el.innerHTML=S.areas.map((a,i)=>`
+    <div class="aitem">
+      <span style="display:flex;align-items:center;min-width:0;">
+        <span class="aclr" style="background:${COLORS[i%COLORS.length]};"></span>
+        <span class="aname">${a.label}</span>
       </span>
-      <span style="color:var(--green);font-weight:500;flex-shrink:0">${formatArea(a.sqm)} <span style="color:var(--muted)">${getAreaUnit(a.unit)}</span></span>
+      <span style="color:var(--green);font-weight:500;flex-shrink:0;">${fmtA(a.sqm)} <span style="color:var(--muted);">${unitStr(a.unit)}</span></span>
     </div>`).join('');
 }
 
-function exportResults(){
+function exportCSV(){
   const rows=['Label,Area,Unit'];
-  state.areas.forEach(a=>rows.push(`${a.label},${formatArea(a.sqm)},${getAreaUnit(a.unit)}`));
+  S.areas.forEach(a=>rows.push(`${a.label},${fmtA(a.sqm)},${unitStr(a.unit)}`));
   const blob=new Blob([rows.join('\n')],{type:'text/csv'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
-  a.href=url; a.download='floorplan-areas.csv'; a.click();
+  a.href=url; a.download='pam-areas.csv'; a.click();
   URL.revokeObjectURL(url);
 }
 
-/* ── MOBILE SHEET ── */
+/* ══════════ MOBILE SHEET ══════════ */
+/* Each tab renders its own HTML into the sheet scroll area.
+   Inputs mirror the hidden desktop inputs via oninput/onchange. */
+
 function sheetHTML(n){
+  const rvCal = document.getElementById('ref-len').value;
+  const rvUnit = document.getElementById('ref-unit').value;
+  const rvLabel = document.getElementById('room-label').value;
+  const refMsg = document.getElementById('ref-msg').textContent;
+
   if(n===1) return `
-    <p style="font-size:12px;color:var(--muted);margin-bottom:12px">Select or drop a floorplan image.</p>
-    <button onclick="document.getElementById('file-input').click();closeSheet()" style="width:100%;justify-content:center;padding:12px">&#43; Choose image</button>`;
+    <div class="shead">Load floorplan</div>
+    <p style="font-size:11px;color:var(--muted);margin-bottom:12px;">Choose a PNG, JPG or WebP image of your floorplan.</p>
+    <button onclick="triggerFile();closeSheet();" style="width:100%;justify-content:center;padding:11px 12px;">&#43; Choose image</button>`;
+
   if(n===2) return `
-    <p style="font-size:11px;color:var(--muted);margin-bottom:10px">Tap two points on a known dimension, then enter the real length.</p>
-    <div class="input-row"><label>Length</label>
-      <input type="number" id="rl-m" placeholder="e.g. 3.5" step="0.01" min="0.01"
-        value="${document.getElementById('ref-length').value}"
-        oninput="document.getElementById('ref-length').value=this.value">
-      <select onchange="document.getElementById('ref-unit').value=this.value">
-        ${['m','cm','ft','in'].map(u=>`<option value="${u}"${u===document.getElementById('ref-unit').value?' selected':''}>${u}</option>`).join('')}
+    <div class="shead">Set scale</div>
+    <p style="font-size:11px;color:var(--muted);margin-bottom:10px;">Tap two points on a known dimension on the plan, then enter the real length below.</p>
+    <div class="irow">
+      <label>Length</label>
+      <input type="number" id="m-len" inputmode="decimal" placeholder="e.g. 3.5" step="0.01" min="0.01"
+        value="${rvCal}"
+        oninput="document.getElementById('ref-len').value=this.value;">
+      <select id="m-unit" onchange="document.getElementById('ref-unit').value=this.value;">
+        ${['m','cm','ft','in'].map(u=>`<option value="${u}"${u===rvUnit?' selected':''}>${u}</option>`).join('')}
       </select>
     </div>
-    <div style="display:flex;gap:6px;margin-bottom:8px">
-      <button onclick="startRefLine();closeSheet()">Draw ref line</button>
-      <button class="success" onclick="document.getElementById('ref-length').value=document.getElementById('rl-m').value;setScale()"
-        style="${state.refPixels?'':'display:none'}">Set scale</button>
+    <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;">
+      <button onclick="startRef();closeSheet();">Draw ref line</button>
+      <button class="ok" onclick="document.getElementById('ref-len').value=document.getElementById('m-len').value;document.getElementById('ref-unit').value=document.getElementById('m-unit').value;commitScale();"
+        style="${S.refPx?'':'display:none'};">Set scale</button>
     </div>
-    <div style="font-size:10px;color:var(--muted)">${document.getElementById('ref-status').textContent||'Tap Draw ref line first'}</div>`;
+    <div style="font-size:10px;color:var(--muted);line-height:1.5;">${refMsg||'Tap "Draw ref line" then tap two points on the canvas.'}</div>`;
+
   if(n===3) return `
-    <p style="font-size:11px;color:var(--muted);margin-bottom:10px">Tap points around the room. Tap first point to close.</p>
-    <div class="input-row"><label>Label</label>
-      <input type="text" id="rl2-m" placeholder="e.g. Bedroom 1"
-        value="${document.getElementById('room-label').value}"
-        oninput="document.getElementById('room-label').value=this.value">
+    <div class="shead">Trace area</div>
+    <p style="font-size:11px;color:var(--muted);margin-bottom:10px;">Tap points around a room on the canvas. Tap the first point (or ✓ below) to close the shape.</p>
+    <div class="irow">
+      <label>Label</label>
+      <input type="text" id="m-label" placeholder="e.g. Bedroom 1"
+        value="${rvLabel}"
+        oninput="document.getElementById('room-label').value=this.value;">
     </div>
-    <div style="display:flex;gap:6px;flex-wrap:wrap">
-      <button class="primary" onclick="startTrace();closeSheet()">Start tracing</button>
-      <button class="success" onclick="document.getElementById('room-label').value=(document.getElementById('rl2-m')?document.getElementById('rl2-m').value:'');closePoly()"
-        style="${state.tracePoints.length>=3?'':'display:none'}">&#x2713; Close shape</button>
-      <button class="danger" onclick="clearTrace();closeSheet()"
-        style="${state.tracePoints.length?'':'display:none'}">Clear</button>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;">
+      <button class="prim" onclick="startTrace();closeSheet();">Start tracing</button>
+      <button class="ok"
+        onclick="document.getElementById('room-label').value=document.getElementById('m-label')?document.getElementById('m-label').value:'';closePoly();"
+        style="${S.pts.length>=3?'':'display:none'};">&#x2713; Close shape</button>
+      <button class="bad" onclick="clearTrace();closeSheet();"
+        style="${S.pts.length?'':'display:none'};">Clear</button>
     </div>
-    ${state.tracePoints.length?`<p style="font-size:10px;color:var(--muted);margin-top:8px">${state.tracePoints.length} point${state.tracePoints.length!==1?'s':''} placed</p>`:''}`;
+    ${S.pts.length?`<p style="font-size:10px;color:var(--muted);">${S.pts.length} point${S.pts.length!==1?'s':''} placed on canvas</p>`:''}`;
+
   if(n===4) return `
-    ${!state.areas.length?'<p style="color:var(--muted);font-size:11px">No areas yet.</p>':
-      state.areas.map((a,i)=>`<div class="area-item">
-        <span style="display:flex;align-items:center;min-width:0">
-          <span class="area-color" style="background:${COLORS[i%COLORS.length]}"></span>
-          <span class="area-name">${a.label}</span>
+    <div class="shead">Measurements</div>
+    ${!S.areas.length?'<p style="color:var(--muted);font-size:11px;">No areas measured yet.</p>':
+      S.areas.map((a,i)=>`<div class="aitem">
+        <span style="display:flex;align-items:center;min-width:0;">
+          <span class="aclr" style="background:${COLORS[i%COLORS.length]};"></span>
+          <span class="aname">${a.label}</span>
         </span>
-        <span style="color:var(--green);font-weight:500;flex-shrink:0">${formatArea(a.sqm)} <span style="color:var(--muted)">${getAreaUnit(a.unit)}</span></span>
+        <span style="color:var(--green);font-weight:500;flex-shrink:0;">${fmtA(a.sqm)} <span style="color:var(--muted);">${unitStr(a.unit)}</span></span>
       </div>`).join('')}
-    ${state.areas.length?`<div style="display:flex;gap:6px;margin-top:12px">
-      <button onclick="exportResults()" style="flex:1;justify-content:center">&#x2193; Export CSV</button>
-      <button class="danger" onclick="clearAll();syncMobileSheet(4)">Clear</button>
+    ${S.areas.length?`<div style="display:flex;gap:6px;margin-top:12px;">
+      <button onclick="exportCSV();" style="flex:1;justify-content:center;">&#x2193; Export CSV</button>
+      <button class="bad" onclick="clearAll();syncSheet(4);">Clear all</button>
     </div>`:''}`;
   return '';
 }
 
-function mobileTab(n){
-  if(window.innerWidth>700) return;
-  const sheet=document.getElementById('bottom-sheet');
-  const content=document.getElementById('sheet-content');
-  if(sheet.classList.contains('open')&&parseInt(sheet.dataset.tab)===n){
+let activeTab=0;
+
+function mTab(n){
+  if(window.innerWidth>680) return;
+  const sheet=document.getElementById('bsheet');
+  // toggle: same tab closes
+  if(activeTab===n && sheet.classList.contains('open')){
     closeSheet(); return;
   }
-  content.innerHTML=sheetHTML(n);
-  sheet.dataset.tab=n;
+  activeTab=n;
+  document.getElementById('bscroll').innerHTML=sheetHTML(n);
   sheet.classList.add('open');
 }
 
-function syncMobileSheet(n){
-  const sheet=document.getElementById('bottom-sheet');
-  if(sheet.classList.contains('open')&&parseInt(sheet.dataset.tab)===n)
-    document.getElementById('sheet-content').innerHTML=sheetHTML(n);
+function syncSheet(n){
+  const sheet=document.getElementById('bsheet');
+  if(sheet.classList.contains('open') && activeTab===n)
+    document.getElementById('bscroll').innerHTML=sheetHTML(n);
 }
 
 function closeSheet(){
-  const sheet=document.getElementById('bottom-sheet');
-  sheet.classList.remove('open'); sheet.dataset.tab='';
+  document.getElementById('bsheet').classList.remove('open');
+  activeTab=0;
 }
 
-function updateMobileNav(step){
+function updMnav(step){
   for(let i=1;i<=3;i++){
-    const btn=document.getElementById(`mnav-${i}`);
-    if(!btn) continue;
-    btn.classList.remove('nav-active','nav-done');
-    if(i<step) btn.classList.add('nav-done');
-    else if(i===step) btn.classList.add('nav-active');
+    const b=document.getElementById(`mn${i}`);
+    if(!b) continue;
+    b.classList.remove('nav-on','nav-done');
+    if(i<step) b.classList.add('nav-done');
+    else if(i===step) b.classList.add('nav-on');
   }
 }
 </script>
